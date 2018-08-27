@@ -8,6 +8,8 @@ This repository contains data and code from:
 
 Ramsey, D.S.L., Forsyth, D.M., Wright, E., McKay, M., and Westbrooke, I. (2018). "Using propensity scores for causal inference in ecology: options, considerations and a case study" *Methods in Ecology and Evolution*
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1403923.svg)](https://doi.org/10.5281/zenodo.1403923)
+
 Getting started
 ---------------
 
