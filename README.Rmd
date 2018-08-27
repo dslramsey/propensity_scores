@@ -1,0 +1,29 @@
+---
+title: "Using propensity scores for causal inference in ecology: options, considerations and a case study"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Notes
+
+This repository contains data and code from: 
+
+Ramsey, D.S.L., Forsyth, D.M., Wright, E., McKay, M., and Westbrooke, I. (2018). "Using propensity scores for causal inference in ecology: options, considerations and a case study" _Methods in Ecology and Evolution_  
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1403922.svg)](https://doi.org/10.5281/zenodo.1403922)
+
+## Getting started
+
+
+_Propensity_simulations.r_: will recreate the simulated scenarios from the MS.
+ 
+
+_Propensity_TreeCover_Analyis.r_:  will recreate the treecover analysis from the case study.
+
+
+## Prerequisites
+
+The simulation script require packages _optmatch_, _tidyverse_, _survey_, _forcats_ and _RColorBrewer_ while the tree cover analysis requires in addition, _cobalt_ , _readr_ and _treatsens_.
