@@ -72,8 +72,13 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
   form2<- fbuild("y", var_names, "Tr")
   
   # some structures for holding results
-  te<- se<- pv<- rep(NA, 6)
-  
+  te<- se<- pv<- rep(NA, 5)
+  if(est=="ATE"){
+    ps.nam<- c("Trt","Reg","IPW","IPW_dr","FM")
+  } else {
+    ps.nam<- c("Trt","OM","IPW","IPW_dr","FM")
+  }
+                  
   #  Initial check for separation or non-convergence and exit if fail
   if((sum(the_data$Tr)==0) | !(glm(form1,data=the_data,family=binomial)$converged)) {
     df<- data.frame(TE=te,SE=se,Cov=pv)
@@ -82,7 +87,7 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
     df$vars_in<- j
     df$est<- est
     df$target<- round(target,2)
-    df$method<- c("Trt","Reg","IPW","IPW_dr","FM","PM")
+    df$method<- ps.nam 
     return(df)
   }
   else pscore<- glm(form1,data=the_data,family=binomial)
@@ -94,12 +99,27 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
   se[1] <- SE(mod1)["Tr"]
   pv[1] <- ifelse((te[1]-1.96*se[1] < target) & (te[1]+1.96*se[1] > target), 1, 0)
   
-  #-- ANCOVA regression
-  mod2 <- glm(form2, data=the_data)
-  te[2] <- coef(mod2)["Tr"] 
-  se[2] <- SE(mod2)["Tr"]
-  pv[2] <- ifelse((te[2]-1.96*se[2] < target) & (te[2]+1.96*se[2] >target), 1, 0)
-  
+  if(est == "ATE") { # Do regression for ATE
+    #-- ANCOVA regression
+    mod2 <- glm(form2, data=the_data)
+    te[2] <- coef(mod2)["Tr"] 
+    se[2] <- SE(mod2)["Tr"]
+    pv[2] <- ifelse((te[2]-1.96*se[2] < target) & (te[2]+1.96*se[2] >target), 1, 0)
+  }
+  else { # do pair matching for ATT
+    #--- Matching - optimal for ATT (no caliper)-------------
+    # using the optmatch package
+    fmatch <- match_on(pscore, data=the_data) 
+    sclass<- pairmatch(fmatch, data=the_data)
+    the_data$w<- get.match.weights(sclass, the_data$Tr, estimand="ATT") # Always ATT for pairmatching 
+    if(!all(the_data$w == 0)) {
+      design.ps<- svydesign(ids= ~1, weights= ~w, data=the_data)
+      mod2 <- svyglm(y ~ Tr, design=design.ps)
+      te[2] <- coef(mod2)["Tr"] 
+      se[2] <- SE(mod2)["Tr"]
+      pv[2]<- ifelse((te[2]-1.96*se[2] < target) & (te[2]+1.96*se[2] > target), 1, 0)
+      }
+  }
   #--- IPTW Inverse Probability of Treatment Weights 
   
   the_data$w<- calc.pswts(pscore$fitted.values, the_data$Tr, estimand=est, trim=FALSE) 
@@ -134,18 +154,7 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
     pv[5] <- ifelse((te[5]-1.96*se[5] < target) & (te[5]+1.96*se[5] > target), 1, 0)
   }
   
-  #--- Matching - optimal for ATT (no caliper)-------------
-  # using the optmatch package
-  fmatch <- match_on(pscore, data=the_data) 
-  sclass<- pairmatch(fmatch, data=the_data)
-  the_data$w<- get.match.weights(sclass, the_data$Tr, estimand="ATT") # Always ATT for pairmatching 
-  if(!all(the_data$w == 0)) {
-    design.ps<- svydesign(ids= ~1, weights= ~w, data=the_data)
-    mod6 <- svyglm(y ~ Tr, design=design.ps)
-    te[6] <- coef(mod6)["Tr"] 
-    se[6] <- SE(mod6)["Tr"]
-    pv[6]<- ifelse((te[6]-1.96*se[6] < target) & (te[6]+1.96*se[6] > target), 1, 0)
-  }
+  
   #-------------------------------------------------------------------------
   # Gather results
   df<- data.frame(TE=te,SE=se,Cov=pv)
@@ -154,7 +163,7 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
   df$vars_in<- j
   df$est<- est
   df$target<- round(target,2)
-  df$method<- c("Trt","Reg","IPW","IPW_dr","FM","PM")
+  df$method<- ps.nam
   return(df)
 }
 

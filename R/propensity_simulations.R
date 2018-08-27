@@ -6,7 +6,7 @@ library(optmatch)
 library(parallel)
 
 
-source("propensity_simulation_functions.R")
+source("R/propensity_simulation_functions.R")
 #=====================loop=================
 
 cl<- makeCluster(25)  # Set to desired number of cores 
@@ -15,7 +15,6 @@ clusterEvalQ(cl, {
   library(dplyr)
   library(survey)
   library(optmatch)
-  library(simstudy)
 })
 
 clusterExport(cl, varlist=c("pscore.sim","sim_data","calc.pswts","fbuild",
@@ -67,9 +66,14 @@ results<- do.call('rbind', results)
 #=================================================
 library(ggplot2)
 library(RColorBrewer)
-palette <- brewer.pal(9, "Set1")[c(1:5,8,9)]
-names(palette) <- c("Trt","Reg","IPW","IPW_dr","FM","PM")
+palette <- brewer.pal(9, "Set1")[c(1:5)]
+if(estimand=="ATE") {
+  ps.nam<- c("Trt","Reg","IPW","IPW_dr","FM")
+} else {
+  ps.nam<- c("Trt","OM","IPW","IPW_dr","FM")
+}
 
+names(palette) <- ps.nam
 
 new_levels<- c("Treatment probability 50%","Treatment probability 25%")
 
@@ -79,7 +83,7 @@ new_levels<- c("Treatment probability 50%","Treatment probability 25%")
 win.graph(10,3)
  results %>% mutate(vars_in = lvls_revalue(factor(vars_in),new_levels),
          Bias=(TE - target), 
-         method = fct_relevel(method, c("Trt","FM","PM","IPW","IPW_dr","Reg"))) %>%
+         method = fct_relevel(method, ps.nam)) %>%
   ggplot(aes(x = as.factor(n), color = method, y = Bias)) +
   geom_boxplot(outlier.colour = NA, position ="dodge") +
   coord_cartesian(ylim = c(-3, 3)) +
@@ -95,7 +99,7 @@ win.graph(10,3)
  win.graph(10,3)
  results %>% filter(vars_in %in% c(1:4)) %>%
    mutate(vars_in = lvls_revalue(factor(vars_in),new_levels),
-          RMSE=sqrt((value - Target)^2), 
+          RMSE=sqrt((value - target)^2), 
           method = fct_relevel(method, c("Trt","FM","PM","IPW","IPW_dr","Reg"))) %>%
    ggplot(aes(x = as.factor(n), color = method, y = RMSE)) +
    geom_boxplot(outlier.colour = NA) +
