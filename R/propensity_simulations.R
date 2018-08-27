@@ -24,19 +24,20 @@ clusterExport(cl, varlist=c("pscore.sim","sim_data","calc.pswts","fbuild",
 
 # Sample size
 n_size <- c(50, 100, 200, 500, 1000)
-t_coef<- 1
+t_coef<- 1 # Treatment coefficient
 estimand<- "ATT"
 
-scenario<- 2
+scenario<- 2  # i.e. heterogeneous treatment effect
 
-pint<- c(0.5, 0.2)
+pint<- c(0.5, 0.2)  # Marginal probability of treatment
 
-vars_out<- c(NULL)
+vars_out<- c(NULL) # covariates to exclude
+#vars_out<- c("V1","V2")
 
 results<- list()
 ind<- 1
-# Number of reps to do of each combination of sample size and variables in:
-reps <- 1000
+# Number of reps. Set to 100 for illustration.  Increase for more robust inferences:
+reps <- 100
 
 for(i in 1:length(n_size)) {
   cat("Doing option ",n_size[i],"\n")
@@ -70,7 +71,7 @@ palette <- brewer.pal(9, "Set1")[c(1:5)]
 if(estimand=="ATE") {
   ps.nam<- c("Trt","Reg","IPW","IPW_dr","FM")
 } else {
-  ps.nam<- c("Trt","OM","IPW","IPW_dr","FM")
+  ps.nam<- c("Trt","PM","IPW","IPW_dr","FM")
 }
 
 names(palette) <- ps.nam
@@ -100,7 +101,7 @@ win.graph(10,3)
  results %>% filter(vars_in %in% c(1:4)) %>%
    mutate(vars_in = lvls_revalue(factor(vars_in),new_levels),
           RMSE=sqrt((value - target)^2), 
-          method = fct_relevel(method, c("Trt","FM","PM","IPW","IPW_dr","Reg"))) %>%
+          method = fct_relevel(method, ps.nam)) %>%
    ggplot(aes(x = as.factor(n), color = method, y = RMSE)) +
    geom_boxplot(outlier.colour = NA) +
    coord_cartesian(ylim = c(0, 3)) +
@@ -117,7 +118,7 @@ results3 %>% gather(method, value, -iter, -vars_in, -n) %>%
   mutate(vars_in = lvls_revalue(factor(vars_in), new_levels)) %>%
   group_by(method, vars_in, n) %>% summarise(value=mean(value, na.rm=T)) %>% 
   ungroup(method) %>% 
-  mutate(method = fct_relevel(method, c("Trt","FM","PM","IPW","IPW_dr","Reg"))) %>% 
+  mutate(method = fct_relevel(method, ps.nam)) %>% 
   ggplot(aes(x = factor(n), shape = vars_in, y = value)) +
   geom_jitter(size=2, width=0.05, height=0) +
   geom_hline(yintercept = 0.95, linetype=2) +

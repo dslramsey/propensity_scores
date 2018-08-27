@@ -51,7 +51,7 @@ Data<- Data %>% group_by(Species, Control, Method) %>% mutate(weights=w/sum(w))
 
 Data<- Data %>% ungroup(Control) %>% 
   mutate(Control = lvls_revalue(factor(Control), c("Untreated","Treated")),
-         Method = lvls_revalue(factor(Method), c("FM","IPW","OM","Unadjusted")),
+         Method = lvls_revalue(factor(Method), c("FM","IPW","PM","Unadjusted")),
          Method = lvls_reorder(Method,c(4,3,1,2)))
 
 win.graph(10,10)

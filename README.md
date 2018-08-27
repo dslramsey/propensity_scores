@@ -8,7 +8,7 @@ This repository contains data and code from:
 
 Ramsey, D.S.L., Forsyth, D.M., Wright, E., McKay, M., and Westbrooke, I. (2018). "Using propensity scores for causal inference in ecology: options, considerations and a case study" *Methods in Ecology and Evolution*
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1403923.svg)](https://doi.org/10.5281/zenodo.1403923)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1403922.svg)](https://doi.org/10.5281/zenodo.1403922)
 
 Getting started
 ---------------
@@ -20,4 +20,4 @@ Getting started
 Prerequisites
 -------------
 
-The simulation script require packages *optmatch*, *tidyverse*, *survey*, *forcats*, while the tree cover analysis requires in addition, *cobalt*,and *readr*.
+The simulation script require packages *optmatch*, *tidyverse*, *survey*, *forcats* and *RColorBrewer* while the tree cover analysis requires in addition, *cobalt* , *readr* and *treatsens*.

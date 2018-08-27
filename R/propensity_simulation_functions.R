@@ -66,7 +66,7 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
   else target<- sdata$SATT
   
   var_names<- paste0("V",1:6)
-  if(!is.null(var_names)) var_names<- var_names[!var_names %in% v_opt]
+  if(!is.null(v_opt)) var_names<- var_names[!var_names %in% v_opt]
   
   form1<- fbuild("Tr", var_names)
   form2<- fbuild("y", var_names, "Tr")
@@ -76,7 +76,7 @@ pscore.sim<- function(r, j, nopt, v_opt, scenario=1, t_coef=1, pint=0.5,
   if(est=="ATE"){
     ps.nam<- c("Trt","Reg","IPW","IPW_dr","FM")
   } else {
-    ps.nam<- c("Trt","OM","IPW","IPW_dr","FM")
+    ps.nam<- c("Trt","PM","IPW","IPW_dr","FM")
   }
                   
   #  Initial check for separation or non-convergence and exit if fail
