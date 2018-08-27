@@ -20,4 +20,4 @@ Getting started
 Prerequisites
 -------------
 
-The simulation script require packages *optmatch*, *tidyverse*, *survey*, *forcats*, while the tree cover analysis requires in addition, *cobalt*,and *readr*.
+The simulation script require packages *optmatch*, *tidyverse*, *survey*, *forcats* and *RColorBrewer* while the tree cover analysis requires in addition, *cobalt* , *readr* and *treatsens*.
