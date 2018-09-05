@@ -22,16 +22,16 @@ for(i in 1:n) {
   form<- fbuild("Control", var_names)
   
   # Propensity scores
-  pscore<- glm(form, data=Data, family=binomial) 
+  pscore<- glm(form, data=as.data.frame(Data), family=binomial) 
   Data$p.score<- pscore$fitted.values
   
   # Pair matching on ATT
-  mhd <- match_on(pscore, data=as.data.frame(Data)) 
-  wts<- pairmatch(mhd, data=as.data.frame(Data))
+  fmatch <- match_on(pscore, data=Data) 
+  wts<- pairmatch(as.matrix(fmatch), data=Data)
   Data$PM<- get.match.weights(wts, Data$Control, "ATT")  
   
   # Full matching on ATT
-  wts<- fullmatch(mhd, data=Data)
+  wts<- fullmatch(as.matrix(fmatch), data=Data)
   Data$FM<- get.match.weights(wts, Data$Control, "ATT")  
   
   #IPTW
@@ -201,34 +201,22 @@ res %>%  mutate(method= lvls_reorder(method,c(3,1,2))) %>%
 
 #--------------------------------
 #
-# Sensitity analysis
+# Sensitivty analysis
 #
 
 library(treatSens)
 
 Data<- filter(Alldata, Species==spp1[1])
-vars<- dplyr::select(Data, BA:MAS)
+vars<- dplyr::select(Data, BA:MAS) # These covariates already standardised
 var_names<- names(vars)
 
 X<- as.matrix(vars)
 Y<- as.vector(log(Data$Y))
 Z<- as.vector(Data$Control)
 
-
-form<- fbuild("Control", var_names)
-pscore<- glm(form, data=Data, family=binomial(link="probit"))
-Data$p.score<- pscore$fitted.values
-Data$wts<- calc.pswts(Data$p.score, Data$Control, "ATT", trim=FALSE)
-
-
-design.ps<- svydesign(ids= ~1, weights=~wts, data=Data)
-
-form<- fbuild("log(Y)", var_names, "Control")
-mod<- svyglm(form, design=design.ps)
-summary(mod)
-
-sens <- treatSens(Y ~ Z+X, trt.family = binomial(link="probit"), nsim = 200, 
-                     spy.range = c(0,3), spz.range = c(-2, 2),grid.dim = c(17,9),
+nsim<- 100 # increase to 200 to reproduce figure from MS
+sens <- treatSens(Y ~ Z+X, trt.family = binomial(link="probit"), nsim = nsim, 
+                     spy.range = c(0,2), spz.range = c(-2, 2),grid.dim = c(17,9),
                      standardize = FALSE, verbose = F, weights="ATT")
 
 sens$varnames<- c("Y","Z",var_names)

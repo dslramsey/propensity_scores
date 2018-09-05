@@ -19,13 +19,13 @@ clusterEvalQ(cl, {
 
 clusterExport(cl, varlist=c("pscore.sim","sim_data","calc.pswts","fbuild",
                             "get.match.weights","ess"))
-#seed<- runif(99)
-#clusterSetRNGStream(cl, seed)
+seed<- 99
+clusterSetRNGStream(cl, seed)  # For reproducability
 
 # Sample size
 n_size <- c(50, 100, 200, 500, 1000)
 t_coef<- 1 # Treatment coefficient
-estimand<- "ATT"
+estimand<- "ATE"
 
 scenario<- 2  # i.e. heterogeneous treatment effect
 
@@ -37,7 +37,7 @@ vars_out<- c(NULL) # covariates to exclude
 results<- list()
 ind<- 1
 # Number of reps. Set to 100 for illustration.  Increase for more robust inferences:
-reps <- 100
+reps <- 1000
 
 for(i in 1:length(n_size)) {
   cat("Doing option ",n_size[i],"\n")
@@ -98,9 +98,8 @@ win.graph(10,3)
  # RMSE
 
  win.graph(10,3)
- results %>% filter(vars_in %in% c(1:4)) %>%
-   mutate(vars_in = lvls_revalue(factor(vars_in),new_levels),
-          RMSE=sqrt((value - target)^2), 
+ results %>% mutate(vars_in = lvls_revalue(factor(vars_in),new_levels),
+          RMSE=sqrt((TE - target)^2), 
           method = fct_relevel(method, ps.nam)) %>%
    ggplot(aes(x = as.factor(n), color = method, y = RMSE)) +
    geom_boxplot(outlier.colour = NA) +
@@ -114,12 +113,11 @@ win.graph(10,3)
 # Coverage
 
 win.graph(8,6)
-results3 %>% gather(method, value, -iter, -vars_in, -n) %>% 
-  mutate(vars_in = lvls_revalue(factor(vars_in), new_levels)) %>%
-  group_by(method, vars_in, n) %>% summarise(value=mean(value, na.rm=T)) %>% 
+results %>% mutate(vars_in = lvls_revalue(factor(vars_in), new_levels)) %>%
+  group_by(method, vars_in, n) %>% summarise(Cov=mean(Cov, na.rm=T)) %>% 
   ungroup(method) %>% 
   mutate(method = fct_relevel(method, ps.nam)) %>% 
-  ggplot(aes(x = factor(n), shape = vars_in, y = value)) +
+  ggplot(aes(x = factor(n), shape = vars_in, y = Cov)) +
   geom_jitter(size=2, width=0.05, height=0) +
   geom_hline(yintercept = 0.95, linetype=2) +
   facet_wrap(~ method, ncol=3) +
