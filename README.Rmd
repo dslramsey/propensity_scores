@@ -18,10 +18,13 @@ Ramsey, D.S.L., Forsyth, D.M., Wright, E., McKay, M., and Westbrooke, I. (2018).
 ## Getting started
 
 
-_Propensity_simulations.r_: will recreate the simulated scenarios from the MS.
- 
+**File descriptions**:
 
-_Propensity_TreeCover_Analyis.r_:  will recreate the treecover analysis from the case study.
+_Propensity_simulations.R_  –  R code used to conduct Monte Carlo simulations of propensity score methods.   Uses functions defined in _propensity_simulation_functions.R_ 
+
+_Propensity_simulation_functions.R_ – R functions used to perform propensity score simulations and helper functions to calculate IPTW weights calc.pswts() and weights from full matching get.match.weights() that target either the ATE or ATT.
+
+_Propensity_TreeCover_Analysis.R_ – R code used to estimate effects of possum control on canopy tree condition using propensity scores. Uses data provided in _Tree_Cover_data.csv_.
 
 
 ## Prerequisites
