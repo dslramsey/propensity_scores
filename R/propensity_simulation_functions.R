@@ -32,7 +32,7 @@ sim_data <- function(n = 500, scenario=1, pint=0.5, t_coef=1, sigy=1) {
   }
   else if (scenario==2) {
     # heterogeneous tretament effect symmetrical around t_coef
-    delta<- ifelse(X[,4] <= 0, t_coef - X[,4]^2, t_coef + X[,4]^2)
+    delta<- ifelse(X[,4] <= 0, t_coef - X[,4]^2, t_coef + X[,4]^3)
   }
   # Untreated state
   y0 <- cbind(1,X[,yvars]) %*% ycoef + rnorm(n, 0, sigy)

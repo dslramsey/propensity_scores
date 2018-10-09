@@ -25,19 +25,19 @@ clusterSetRNGStream(cl, seed)  # For reproducability
 # Sample size
 n_size <- c(50, 100, 200, 500, 1000)
 t_coef<- 1 # Treatment coefficient
-estimand<- "ATE"
+estimand<- "ATT"
 
 scenario<- 2  # i.e. heterogeneous treatment effect
 
 pint<- c(0.5, 0.2)  # Marginal probability of treatment
 
 vars_out<- c(NULL) # covariates to exclude
-#vars_out<- c("V1","V2")
+#vars_out<- c("V5","V6")
 
 results<- list()
 ind<- 1
 # Number of reps. Set to 100 for illustration.  Increase for more robust inferences:
-reps <- 1000
+reps <- 2000
 
 for(i in 1:length(n_size)) {
   cat("Doing option ",n_size[i],"\n")
@@ -80,14 +80,13 @@ new_levels<- c("Treatment probability 50%","Treatment probability 25%")
 
 # Bias
 
-
 win.graph(10,3)
  results %>% mutate(vars_in = lvls_revalue(factor(vars_in),new_levels),
          Bias=(TE - target), 
          method = fct_relevel(method, ps.nam)) %>%
   ggplot(aes(x = as.factor(n), color = method, y = Bias)) +
   geom_boxplot(outlier.colour = NA, position ="dodge") +
-  coord_cartesian(ylim = c(-3, 3)) +
+  coord_cartesian(ylim = c(-2, 2)) +
   geom_hline(yintercept=0, linetype=1) +
   facet_wrap( ~ vars_in, ncol=2) +
   scale_colour_manual(values = palette, guide = guide_legend(title="Method")) +
@@ -126,5 +125,21 @@ results %>% mutate(vars_in = lvls_revalue(factor(vars_in), new_levels)) %>%
   theme_bw() + theme(legend.position=c(0.8,0.15)) 
 
 
+# Tables 
+
+nl<- c("50%","25%")
+
+tmp<- results %>% mutate(vars_in = lvls_revalue(factor(vars_in),nl),
+                         Bias=(TE - target),
+                         RMSE=sqrt((TE-target)^2))
+
+tmp<- tmp %>% group_by(vars_in, method, n) %>% summarise(Bias=mean(Bias,na.rm=T),
+                                                         RMSE=mean(RMSE,na.rm=T),
+                                                         SD=sd(TE,na.rm=T),
+                                                         Coverage=mean(Cov,na.rm=T))
+
+tmp<- tmp %>% mutate_at(vars(Bias:Coverage), funs(round(., 2)))
+
+write.csv(tmp, file = "table1.csv", row.names = F)
 
 
